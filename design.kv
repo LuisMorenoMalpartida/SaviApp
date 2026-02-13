@@ -1,0 +1,1225 @@
+# --- SCREEN MANAGER ---
+<SaviScreenManager>:
+    WelcomeScreen:
+    LoginScreen:
+    RegisterScreen:
+    HomeScreen:
+    DetallesJuntaScreen:
+    InvitarScreen:
+    InfoJuntaScreen:
+    IntegrantesPagosScreen:
+
+# --- COMPONENTE: Tarjeta para la lista de Juntas Propias ---
+<TarjetaListaJunta>:
+    orientation: 'vertical'
+    size_hint_y: None
+    height: dp(90)
+    radius: [15]
+    md_bg_color: 0.98, 0.98, 0.98, 1
+    line_color: 0, 0, 0, 0.1
+    elevation: 1
+    ripple_behavior: True
+    on_release: app.ver_detalles_junta(root.nombre, root.monto)
+    
+    # Contenedor Principal
+    MDBoxLayout:
+        orientation: 'horizontal'
+        padding: [dp(15), dp(10)]
+        spacing: dp(10)
+        adaptive_height: True
+        pos_hint: {"center_y": .5}
+
+        # Contenedor Izquierdo (Nombre y Estado)
+        MDBoxLayout:
+            orientation: 'vertical'
+            adaptive_height: True
+            spacing: dp(5)
+            pos_hint: {"center_y": .5}
+            
+            MDLabel:
+                text: root.nombre
+                font_style: "H6"
+                bold: True
+                theme_text_color: "Primary"
+                shorten: True
+                shorten_from: 'right'
+                adaptive_height: True
+                
+            MDLabel:
+                text: "Gestión activa"
+                font_style: "Caption"
+                theme_text_color: "Secondary"
+                adaptive_height: True
+        
+        # Contenedor Derecho (Monto)
+        MDBoxLayout:
+            orientation: 'vertical'
+            adaptive_height: True
+            spacing: dp(5)
+            pos_hint: {"center_y": .5}
+            size_hint_x: None
+            width: dp(120)
+            
+            MDLabel:
+                text: root.monto
+                halign: "right"
+                font_style: "H6"
+                bold: True
+                theme_text_color: "Primary"
+                adaptive_height: True
+
+# --- COMPONENTE: Tarjeta para Juntas Públicas ---
+<TarjetaUnirse>:
+    orientation: 'vertical'
+    size_hint_y: None
+    height: dp(140)
+    padding: dp(15)
+    radius: [15]
+    md_bg_color: 1, 1, 1, 1
+    line_color: 0, 0, 0, 0.1
+    
+    MDBoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: dp(30)
+        MDLabel:
+            text: root.nombre
+            bold: True
+            font_style: "Subtitle1"
+        MDLabel:
+            text: root.monto
+            halign: "right"
+            theme_text_color: "Primary"
+            bold: True
+
+    MDLabel:
+        text: "Organizado por: " + root.organizador
+        font_style: "Caption"
+        theme_text_color: "Secondary"
+    
+    Widget:
+        size_hint_y: None
+        height: dp(10)
+
+    MDRaisedButton:
+        text: "SOLICITAR UNIRSE"
+        size_hint_x: 1
+        md_bg_color: app.theme_cls.primary_color
+        font_size: "12sp"
+
+# --- PANTALLA: BIENVENIDA (3 IMÁGENES) ---
+<WelcomeScreen>:
+    name: 'welcome'
+    MDFloatLayout:
+        md_bg_color: 1, 1, 1, 1
+        Carousel:
+            id: intro_carousel
+            loop: False
+            on_index: if self.index == 2: self.scroll_timeout = 0
+            MDFloatLayout:
+                FitImage:
+                    source: 'assets/1.png'
+            MDFloatLayout:
+                FitImage:
+                    source: 'assets/2.png'
+            MDFloatLayout:
+                FitImage:
+                    source: 'assets/3.png'
+                
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    adaptive_height: True
+                    padding: dp(20)
+                    spacing: dp(20)
+                    pos_hint: {'center_x': .5, 'center_y': .15}
+                    
+                    MDFillRoundFlatButton:
+                        text: "COMENZAR AHORA"
+                        size_hint_x: .8
+                        pos_hint: {'center_x': .5}
+                        md_bg_color: 1, 0.5, 0, 1
+                        on_release: root.manager.current = 'login'
+
+# --- PANTALLA: LOGIN ---
+<LoginScreen>:
+    name: 'login'
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: dp(35)
+        spacing: dp(20)
+        md_bg_color: 1, 1, 1, 1
+        
+        Widget:
+            size_hint_y: None
+            height: dp(20)
+
+        Image:
+            source: "assets/logo.png"
+            size_hint: None, None
+            size: dp(160), dp(160)
+            pos_hint: {"center_x": 0.5}
+            
+        MDLabel:
+            text: "¡Bienvenido de nuevo!"
+            font_style: "H5"
+            bold: True
+            halign: "center"
+            theme_text_color: "Primary"
+
+        MDTextField:
+            hint_text: "Usuario o Correo"
+            mode: "round"
+            icon_left: "account"
+            
+        MDTextField:
+            hint_text: "Contraseña"
+            mode: "round"
+            password: True
+            icon_left: "lock"
+            
+        MDFillRoundFlatButton:
+            text: "INICIAR SESIÓN"
+            size_hint_x: 1
+            on_release: root.manager.current = 'home'
+            
+        MDTextButton:
+            text: "¿No tienes cuenta? [b]Regístrate aquí[/b]"
+            markup: True
+            pos_hint: {"center_x": 0.5}
+            on_release: root.manager.current = 'register'
+        
+        Widget:
+
+# --- PANTALLA: REGISTRO ---
+<RegisterScreen>:
+    name: 'register'
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: dp(35)
+        spacing: dp(12)
+        md_bg_color: 1, 1, 1, 1
+        
+        MDLabel:
+            text: "Crear Cuenta Nueva"
+            font_style: "H5"
+            bold: True
+            halign: "center"
+            size_hint_y: None
+            height: dp(80)
+            
+        MDTextField:
+            hint_text: "Nombre Completo"
+            mode: "round"
+            icon_left: "account-edit"
+        MDTextField:
+            hint_text: "Correo Electrónico"
+            mode: "round"
+            icon_left: "email"
+        MDTextField:
+            hint_text: "Número de Teléfono"
+            mode: "round"
+            icon_left: "phone"
+        MDTextField:
+            hint_text: "Contraseña"
+            mode: "round"
+            password: True
+            icon_left: "key"
+            
+        MDFillRoundFlatButton:
+            text: "REGISTRARME AHORA"
+            size_hint_x: 1
+            on_release: root.manager.current = 'login'
+            
+        MDTextButton:
+            text: "Ya tengo cuenta, [b]Iniciar sesión[/b]"
+            markup: True
+            pos_hint: {"center_x": 0.5}
+            on_release: root.manager.current = 'login'
+
+# --- PANTALLA: HOME (5 SECCIONES) ---
+<HomeScreen>:
+    name: 'home'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: 0.98, 0.98, 0.98, 1
+
+        # Header con Logo Central
+        MDCard:
+            size_hint_y: None
+            height: dp(90)
+            radius: [0, 0, 0, 0] 
+            md_bg_color: 0.2, 0.2, 0.2, 1 # Gris Carbón (Plomo Elegante)
+            line_color: 0, 0, 0, 0
+            elevation: 4
+            
+            MDFloatLayout:
+                Image:
+                    source: "assets/logo2.png"
+                    size_hint: None, None
+                    size: dp(180), dp(80)
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    allow_stretch: True
+                    keep_ratio: True
+
+        MDBottomNavigation:
+            id: nav_bottom
+            panel_color: 1, 1, 1, 1
+            text_color_active: app.theme_cls.primary_color
+            text_color_normal: 0.5, 0.5, 0.5, 1
+
+            # --- 1. SECCIÓN INICIO ---
+            MDBottomNavigationItem:
+                name: 'tab_inicio'
+                text: 'Inicio'
+                icon: 'home-variant'
+                MDScrollView:
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        padding: dp(20)
+                        spacing: dp(20)
+                        size_hint_y: None
+                        height: self.minimum_height
+                        
+                        # Saludo en la parte superior
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+                            spacing: dp(5)
+
+                        # Banner de Bienvenida solo Imagen
+                        MDCard:
+                            size_hint_y: None
+                            height: dp(180)
+                            radius: [20]
+                            elevation: 2
+                            padding: 0
+                            
+                            MDFloatLayout:
+                                size_hint: 1, 1
+                                
+                                FitImage:
+                                    source: 'assets/4.png'
+                                    radius: [20]
+                                    size_hint: 1, 1
+                                    pos_hint: {"center_x": .5, "center_y": .5}
+
+                        # Sección de Estadísticas (Naranja y Negro)
+                        MDGridLayout:
+                            cols: 2
+                            spacing: dp(15)
+                            size_hint_y: None
+                            height: dp(100)
+                            
+                            # Tarjeta Naranja
+                            MDCard:
+                                radius: [15]
+                                md_bg_color: 1, 0.5, 0, 1 # Naranja SAVI
+                                padding: dp(10)
+                                elevation: 3
+                                ripple_behavior: True
+                                MDBoxLayout:
+                                    orientation: 'vertical'
+                                    pos_hint: {"center_y": .5}
+                                    spacing: dp(5)
+                                    MDIcon:
+                                        icon: "wallet-outline"
+                                        theme_text_color: "Custom"
+                                        text_color: 1, 1, 1, 1
+                                        halign: "center"
+                                        font_size: "32sp"
+                                    MDLabel:
+                                        text: "Ahorrado Total"
+                                        halign: "center"
+                                        theme_text_color: "Custom"
+                                        text_color: 1, 1, 1, 0.9
+                                        font_style: "Caption"
+                                    MDLabel:
+                                        text: "S/ 0.00"
+                                        halign: "center"
+                                        theme_text_color: "Custom"
+                                        text_color: 1, 1, 1, 1
+                                        font_style: "Subtitle1"
+                                        bold: True
+
+                            # Tarjeta Negra
+                            MDCard:
+                                radius: [15]
+                                md_bg_color: 1, 0.5, 0, 1 
+                                padding: dp(10)
+                                elevation: 3
+                                ripple_behavior: True
+                                MDBoxLayout:
+                                    orientation: 'vertical'
+                                    pos_hint: {"center_y": .5}
+                                    spacing: dp(5)
+                                    MDIcon:
+                                        icon: "chart-line"
+                                        theme_text_color: "Custom"
+                                        text_color: 1, 1, 1, 1
+                                        halign: "center"
+                                        font_size: "32sp"
+                                    MDLabel:
+                                        text: "Juntas Activas"
+                                        halign: "center"
+                                        theme_text_color: "Custom"
+                                        text_color: 1, 1, 1, 0.9
+                                        font_style: "Caption"
+                                    MDLabel:
+                                        text: "0"
+                                        halign: "center"
+                                        theme_text_color: "Custom"
+                                        text_color: 1, 1, 1, 1
+                                        font_style: "Subtitle1"
+                                        bold: True
+
+                        # Acciones Rápidas
+                        MDLabel:
+                            text: "¿Qué quieres hacer hoy?"
+                            font_style: "H6"
+                            bold: True
+                            adaptive_height: True
+                            theme_text_color: "Primary"
+
+                        MDBoxLayout:
+                            size_hint_y: None
+                            height: dp(50)
+                            spacing: dp(15)
+                            
+                            MDFillRoundFlatButton:
+                                text: "CREAR JUNTA"
+                                font_size: "14sp"
+                                size_hint_x: .5
+                                md_bg_color: 1, 0.5, 0, 1
+                                on_release: nav_bottom.switch_tab('tab_crear')
+
+                            MDFillRoundFlatButton:
+                                text: "BUSCAR"
+                                font_size: "14sp"
+                                size_hint_x: .5
+                                md_bg_color: 1, 0.5, 0, 1
+                                on_release: nav_bottom.switch_tab('tab_unirse')
+                        
+                        # Tip del día (Estilizado)
+                        MDCard:
+                            orientation: 'horizontal'
+                            padding: dp(15)
+                            spacing: dp(15)
+                            size_hint_y: None
+                            height: dp(90)
+                            radius: [15]
+                            md_bg_color: 1, 1, 1, 1
+                            line_color: 1, 0.5, 0, 0.3
+                            elevation: 1
+                            ripple_behavior: True
+                            
+                            MDIcon:
+                                icon: "lightbulb-on-outline"
+                                theme_text_color: "Custom"
+                                text_color: 1, 0.5, 0, 1
+                                font_size: "36sp"
+                                pos_hint: {"center_y": .5}
+                                
+                            MDBoxLayout:
+                                orientation: 'vertical'
+                                pos_hint: {"center_y": .5}
+                                MDLabel:
+                                    text: "Tip Financiero"
+                                    bold: True
+                                    theme_text_color: "Primary"
+                                    font_style: "Subtitle2"
+                                MDLabel:
+                                    text: "Invierte el 10% de tus ingresos en tu junta."
+                                    font_style: "Caption"
+                                    theme_text_color: "Secondary"
+
+            # --- 2. SECCIÓN MIS JUNTAS (LISTA DINÁMICA) ---
+            MDBottomNavigationItem:
+                name: 'tab_mis_juntas'
+                text: 'Mis juntas'
+                icon: 'format-list-checks'
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    MDScrollView:
+                        MDBoxLayout:
+                            id: lista_juntas
+                            orientation: 'vertical'
+                            size_hint_y: None
+                            height: self.minimum_height
+                            padding: dp(15)
+                            spacing: dp(15)
+                            
+                            MDLabel:
+                                id: mensaje_vacio
+                                text: "Aquí aparecerá todas tus juntas creadas.\nUsa la pestaña 'Crear' para empezar."
+                                halign: "center"
+                                theme_text_color: "Secondary"
+                                font_style: "Body1"
+                                size_hint_y: None
+                                height: dp(300)
+
+            # --- 3. SECCIÓN UNIRSE (JUNTAS PÚBLICAS) ---
+            MDBottomNavigationItem:
+                name: 'tab_unirse'
+                text: 'Unirse'
+                icon: 'account-multiple-plus'
+                MDScrollView:
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        padding: dp(15)
+                        spacing: dp(15)
+                        size_hint_y: None
+                        height: self.minimum_height
+                        
+                        MDLabel:
+                            text: "Juntas Públicas Disponibles"
+                            font_style: "H6"
+                            bold: True
+                        
+                        # Aquí puedes agregar tarjetas de ejemplo manualmente
+                        # (Por el momento vacío como se solicitó)
+
+            # --- 4. SECCIÓN CREAR (FORMULARIO) ---
+            MDBottomNavigationItem:
+                name: 'tab_crear'
+                text: 'Crear'
+                icon: 'plus-circle'
+                MDScrollView:
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        padding: dp(20)
+                        spacing: dp(10)
+                        size_hint_y: None
+                        height: self.minimum_height
+                        
+                        # Tarjeta del Formulario
+                        MDCard:
+                            orientation: 'vertical'
+                            size_hint_y: None
+                            height: self.minimum_height
+                            padding: [dp(20), dp(30)]
+                            spacing: dp(25)
+                            radius: [20]
+                            elevation: 2
+                            md_bg_color: 1, 1, 1, 1
+                            
+                            # Campo Nombre
+                            MDTextField:
+                                id: input_nombre
+                                hint_text: "Nombre de la junta"
+                                helper_text: "Ej: Viaje 2026, Auto Nuevo"
+                                helper_text_mode: "on_focus"
+                                mode: "rectangle"
+                                icon_right: "pencil"
+                                icon_right_color: app.theme_cls.primary_color
+                            
+                            # Campo Monto
+                            MDTextField:
+                                id: input_monto
+                                hint_text: "Monto Objetivo"
+                                helper_text: "Monto total a recaudar"
+                                helper_text_mode: "on_focus"
+                                mode: "rectangle"
+                                input_filter: "float"
+                                icon_right: "cash"
+                                icon_right_color: app.theme_cls.primary_color
+
+                            # Selección de Moneda
+                            MDBoxLayout:
+                                orientation: 'vertical'
+                                adaptive_height: True
+                                spacing: dp(5)
+                                
+                                MDLabel:
+                                    text: "Moneda:"
+                                    bold: True
+                                    font_style: "Subtitle2"
+                                    theme_text_color: "Secondary"
+                                    adaptive_height: True
+                                
+                                Widget:
+                                    size_hint_y: None
+                                    height: dp(15) # Espacio entre la palabra Moneda y los botones
+
+                                MDBoxLayout:
+                                    adaptive_height: True
+                                    spacing: dp(15)
+                                    
+                                    # Botón Soles
+                                    MDCard:
+                                        size_hint: .5, None
+                                        height: dp(55)
+                                        radius: [12]
+                                        md_bg_color: (1, 0.5, 0, 1) if app.moneda_seleccionada == "Soles" else (0.96, 0.96, 0.96, 1)
+                                        ripple_behavior: True
+                                        on_release: app.set_moneda("Soles")
+                                        elevation: 1 if app.moneda_seleccionada == "Soles" else 0
+                                        
+                                        MDBoxLayout:
+                                            orientation: 'horizontal'
+                                            padding: dp(10)
+                                            spacing: dp(8)
+                                            adaptive_width: True
+                                            pos_hint: {"center_x": .5, "center_y": .5}
+                                            
+                                            MDIcon:
+                                                icon: "currency-sign"
+                                                theme_text_color: "Custom"
+                                                text_color: (1, 1, 1, 1) if app.moneda_seleccionada == "Soles" else (0.4, 0.4, 0.4, 1)
+                                                font_size: "20sp"
+                                                size_hint: None, None
+                                                size: dp(24), dp(24)
+                                                pos_hint: {"center_y": .5}
+                                                
+                                            MDLabel:
+                                                text: "Soles (S/)"
+                                                adaptive_size: True
+                                                bold: True
+                                                theme_text_color: "Custom"
+                                                text_color: (1, 1, 1, 1) if app.moneda_seleccionada == "Soles" else (0.4, 0.4, 0.4, 1)
+                                                font_style: "Button"
+                                                pos_hint: {"center_y": .5}
+
+                                    # Botón Dólares
+                                    MDCard:
+                                        size_hint: .5, None
+                                        height: dp(55)
+                                        radius: [12]
+                                        md_bg_color: (1, 0.5, 0, 1) if app.moneda_seleccionada == "Dólares" else (0.96, 0.96, 0.96, 1)
+                                        ripple_behavior: True
+                                        on_release: app.set_moneda("Dólares")
+                                        elevation: 1 if app.moneda_seleccionada == "Dólares" else 0
+                                        
+                                        MDBoxLayout:
+                                            orientation: 'horizontal'
+                                            padding: dp(10)
+                                            spacing: dp(8)
+                                            adaptive_width: True
+                                            pos_hint: {"center_x": .5, "center_y": .5}
+                                            
+                                            MDIcon:
+                                                icon: "currency-usd"
+                                                theme_text_color: "Custom"
+                                                text_color: (1, 1, 1, 1) if app.moneda_seleccionada == "Dólares" else (0.4, 0.4, 0.4, 1)
+                                                font_size: "20sp"
+                                                size_hint: None, None
+                                                size: dp(24), dp(24)
+                                                pos_hint: {"center_y": .5}
+                                                
+                                            MDLabel:
+                                                text: "Dólares ($)"
+                                                adaptive_size: True
+                                                bold: True
+                                                theme_text_color: "Custom"
+                                                text_color: (1, 1, 1, 1) if app.moneda_seleccionada == "Dólares" else (0.4, 0.4, 0.4, 1)
+                                                font_style: "Button"
+                                                pos_hint: {"center_y": .5}
+
+                            Widget:
+                                size_hint_y: None
+                                height: dp(10)
+
+                            # Botón de Acción Principal
+                            MDFillRoundFlatButton:
+                                text: "CREAR Y PUBLICAR"
+                                font_size: "16sp"
+                                size_hint_x: 1
+                                height: dp(50)
+                                md_bg_color: 1, 0.5, 0, 1 # Naranja SAVI
+                                on_release: app.crear_junta(input_nombre.text, input_monto.text)
+
+            # --- 5. SECCIÓN PERFIL ---
+            MDBottomNavigationItem:
+                name: 'tab_perfil'
+                text: 'Perfil'
+                icon: 'account-cog'
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    padding: dp(20)
+                    spacing: dp(10)
+                    
+                    MDBoxLayout:
+                        size_hint_y: None
+                        height: dp(100)
+                        spacing: dp(20)
+                        MDIcon:
+                            icon: "account-circle"
+                            font_size: "80sp"
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+                            pos_hint: {"center_y": .5}
+                            MDLabel:
+                                text: "Usuario Savi"
+                                bold: True
+                                font_style: "H6"
+                    
+                    MDSeparator:
+                    
+                    MDList:
+                        OneLineIconListItem:
+                            text: "Mi Cuenta"
+                            IconLeftWidget:
+                                icon: "account-edit"
+                        OneLineIconListItem:
+                            text: "Seguridad"
+                            IconLeftWidget:
+                                icon: "shield-lock"
+
+                    MDFillRoundFlatButton:
+                        text: "CERRAR SESIÓN"
+                        size_hint_x: 0.8
+                        pos_hint: {"center_x": .5}
+                        md_bg_color: 0.85, 0.1, 0.1, 1
+                        on_release: root.manager.current = 'login'
+
+# --- PANTALLA: GESTIÓN DE LA JUNTA (LA IMAGEN ENVIADA) ---
+<DetallesJuntaScreen>:
+    name: 'detalles_junta'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: 1, 1, 1, 1
+        
+        MDBoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            MDIconButton:
+                icon: "chevron-left"
+                on_release: root.manager.current = 'home'
+            MDLabel:
+                text: root.nombre_junta
+                bold: True
+                font_style: "H6"
+
+        MDScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+                spacing: dp(20)
+
+                # TARJETA PRINCIPAL (MONTO)
+                MDCard:
+                    size_hint_y: None
+                    height: dp(150)
+                    radius: [25]
+                    md_bg_color: 1, 0.96, 0.92, 1
+                    line_color: 1, 0.5, 0, 0.2
+                    elevation: 1
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        padding: dp(25)
+                        MDLabel:
+                            text: "Monto de la junta"
+                            halign: "center"
+                            theme_text_color: "Secondary"
+                        MDLabel:
+                            text: root.monto_junta
+                            halign: "center"
+                            font_style: "H3"
+                            bold: True
+                            theme_text_color: "Primary"
+
+                # GRID DE 4 TARJETAS (DETALLES, INVITAR, PAGOS, REPORTAR)
+                MDGridLayout:
+                    cols: 2
+                    spacing: dp(15)
+                    size_hint_y: None
+                    height: self.minimum_height
+                    
+                    # BOTÓN 1: DETALLES
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(170)
+                        padding: dp(15)
+                        radius: [20]
+                        line_color: 0, 0, 0, 0.08
+                        ripple_behavior: True
+                        on_release: root.ir_a_info()
+                        MDIcon:
+                            icon: "card-bulleted-outline"
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                            theme_text_color: "Custom"
+                            text_color: 0.1, 0.45, 0.85, 1
+                        MDLabel:
+                            text: "Detalles"
+                            halign: "center"
+                            bold: True
+                        MDLabel:
+                            text: "Consulta aquí los datos de la junta."
+                            font_style: "Caption"
+                            halign: "center"
+                            theme_text_color: "Secondary"
+
+                    # BOTÓN 2: INVITAR
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(170)
+                        padding: dp(15)
+                        radius: [20]
+                        line_color: 0, 0, 0, 0.08
+                        ripple_behavior: True
+                        on_release: root.ir_a_invitar()
+                        MDIcon:
+                            icon: "qrcode-scan"
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                            theme_text_color: "Custom"
+                            text_color: 0.15, 0.75, 0.35, 1
+                        MDLabel:
+                            text: "Invitar"
+                            halign: "center"
+                            bold: True
+                        MDLabel:
+                            text: "Comparte el ID con tus contactos."
+                            font_style: "Caption"
+                            halign: "center"
+                            theme_text_color: "Secondary"
+
+                    # BOTÓN 3: INTEGRANTES Y PAGOS
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(170)
+                        padding: dp(15)
+                        radius: [20]
+                        line_color: 0, 0, 0, 0.08
+                        ripple_behavior: True
+                        on_release: root.ir_a_pagos()
+                        MDIcon:
+                            icon: "currency-usd-circle-outline"
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                            theme_text_color: "Custom"
+                            text_color: 1, 0.6, 0.1, 1
+                        MDLabel:
+                            text: "Integrantes y Pagos"
+                            halign: "center"
+                            bold: True
+                        MDLabel:
+                            text: "Registra en tiempo real los pagos de cada integrante."
+                            font_style: "Caption"
+                            halign: "center"
+                            theme_text_color: "Secondary"
+
+                    # BOTÓN 4: REPORTAR
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(170)
+                        padding: dp(15)
+                        radius: [20]
+                        line_color: 0, 0, 0, 0.08
+                        ripple_behavior: True
+                        MDIcon:
+                            icon: "alert-octagon-outline"
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                            theme_text_color: "Custom"
+                            text_color: 0.85, 0.15, 0.15, 1
+                        MDLabel:
+                            text: "Reportar"
+                            halign: "center"
+                            bold: True
+                        MDLabel:
+                            text: "Informa sobre faltas de pago."
+                            font_style: "Caption"
+                            halign: "center"
+                            theme_text_color: "Secondary"
+
+# --- PANTALLA: INVITAR ---
+<InvitarScreen>:
+    name: 'invitar'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: 1, 1, 1, 1
+        
+        # Header
+        MDBoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            spacing: dp(15)
+            MDIconButton:
+                icon: "chevron-left"
+                on_release: root.manager.current = 'detalles_junta'
+            MDLabel:
+                text: "Invitar Miembros"
+                bold: True
+                font_style: "H6"
+
+        MDScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(25)
+                spacing: dp(30)
+                pos_hint: {'center_x': .5}
+                
+                MDLabel:
+                    text: "Escanea para unirte"
+                    halign: "center"
+                    font_style: "H5"
+                    bold: True
+                
+                MDCard:
+                    size_hint: None, None
+                    size: dp(250), dp(250)
+                    pos_hint: {'center_x': .5}
+                    radius: [20]
+                    elevation: 1
+                    padding: dp(20)
+                    
+                    Image:
+                        id: img_qr
+                        source: "" # Se llena desde Python
+                        allow_stretch: True
+                        keep_ratio: True
+                        
+                MDLabel:
+                    text: "O comparte este código:"
+                    halign: "center"
+                    theme_text_color: "Secondary"
+                    
+                MDCard:
+                    size_hint_y: None
+                    height: dp(60)
+                    radius: [10]
+                    md_bg_color: 0.95, 0.95, 0.95, 1
+                    padding: dp(15)
+                    
+                    MDLabel:
+                        text: root.codigo_junta
+                        halign: "center"
+                        bold: True
+                        font_style: "H6"
+                        
+                    MDIconButton:
+                        icon: "content-copy"
+                        on_release: root.callback_compartir("Copiar Link")
+                
+                MDFillRoundFlatButton:
+                    text: "COMPARTIR ENLACE"
+                    size_hint_x: .8
+                    pos_hint: {'center_x': .5}
+                    on_release: root.abrir_menu_compartir()
+
+# --- PANTALLA: INFORMACIÓN DETALLADA (CARD GRID) ---
+<InfoJuntaScreen>:
+    name: 'info_junta'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: 0.98, 0.98, 0.98, 1
+        
+        # Header (Back Button + Title)
+        MDBoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            spacing: dp(15)
+            MDIconButton:
+                icon: "chevron-left"
+                on_release: root.manager.current = 'detalles_junta'
+            MDLabel:
+                text: "Detalles de la Junta"
+                bold: True
+                font_style: "H6"
+
+        MDScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+                spacing: dp(25)
+
+                # TARJETA PRINCIPAL (MONTO)
+                MDCard:
+                    size_hint_y: None
+                    height: dp(120)
+                    radius: [20]
+                    md_bg_color: 1, 0.95, 0.9, 1
+                    line_color: 1, 0.5, 0, 0.1
+                    elevation: 1
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        padding: dp(20)
+                        spacing: dp(10)
+                        pos_hint: {'center_x': .5}
+                        MDLabel:
+                            text: "Monto de la junta"
+                            halign: "center"
+                            theme_text_color: "Secondary"
+                            font_style: "Body1"
+                        MDLabel:
+                            text: root.monto
+                            halign: "center"
+                            font_style: "H4"
+                            bold: True
+                            theme_text_color: "Primary"
+
+                # GRID DE 6 TARJETAS (INFO)
+                MDGridLayout:
+                    cols: 2
+                    spacing: dp(15)
+                    size_hint_y: None
+                    height: self.minimum_height
+                    
+                    # 1. Periodo
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(130)
+                        radius: [15]
+                        padding: [dp(10), dp(15)]
+                        spacing: dp(8)
+                        elevation: 1
+                        ripple_behavior: True
+                        MDLabel:
+                            text: "Periodo"
+                            bold: True
+                            font_style: "Subtitle2"
+                            halign: "center"
+                            adaptive_height: True
+                        MDIcon:
+                            icon: "clock-outline"
+                            theme_text_color: "Custom"
+                            text_color: 1, 0.5, 0, 1
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                        MDLabel:
+                            text: root.periodo
+                            halign: "center"
+                            font_style: "Caption"
+                            theme_text_color: "Secondary"
+                            adaptive_height: True
+
+                    # 2. N° Personas
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(130)
+                        radius: [15]
+                        padding: [dp(10), dp(15)]
+                        spacing: dp(8)
+                        elevation: 1
+                        ripple_behavior: True
+                        on_release: root.abrir_dialogo_editar_integrantes()
+                        MDLabel:
+                            text: "N° personas"
+                            bold: True
+                            font_style: "Subtitle2"
+                            halign: "center"
+                            adaptive_height: True
+                        MDIcon:
+                            icon: "format-list-numbered"
+                            theme_text_color: "Custom"
+                            text_color: 1, 0.5, 0, 1
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                        MDLabel:
+                            text: root.num_personas + " Miembros"
+                            halign: "center"
+                            font_style: "Caption"
+                            theme_text_color: "Secondary"
+                            adaptive_height: True
+
+                    # 3. Sorteo de número
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(130)
+                        radius: [15]
+                        padding: [dp(10), dp(15)]
+                        spacing: dp(8)
+                        elevation: 1
+                        ripple_behavior: True
+                        MDLabel:
+                            text: "Sorteo de número"
+                            bold: True
+                            font_style: "Subtitle2"
+                            halign: "center"
+                            adaptive_height: True
+                        MDIcon:
+                            icon: "account-group"
+                            theme_text_color: "Custom"
+                            text_color: 1, 0.5, 0, 1
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                        MDLabel:
+                            text: "Registra tu nombre"
+                            halign: "center"
+                            font_style: "Caption"
+                            theme_text_color: "Secondary"
+                            adaptive_height: True
+
+                    # 4. DNI
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(130)
+                        radius: [15]
+                        padding: [dp(10), dp(15)]
+                        spacing: dp(8)
+                        elevation: 1
+                        ripple_behavior: True
+                        MDLabel:
+                            text: "DNI"
+                            bold: True
+                            font_style: "Subtitle2"
+                            halign: "center"
+                            adaptive_height: True
+                        MDIcon:
+                            icon: "card-account-details-outline"
+                            theme_text_color: "Custom"
+                            text_color: 1, 0.5, 0, 1
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                        MDLabel:
+                            text: "Verificación activa"
+                            halign: "center"
+                            font_style: "Caption"
+                            theme_text_color: "Secondary"
+                            adaptive_height: True
+
+                    # 5. Fecha de inicio
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(130)
+                        radius: [15]
+                        padding: [dp(10), dp(15)]
+                        spacing: dp(8)
+                        elevation: 1
+                        ripple_behavior: True
+                        on_release: root.abrir_calendario('inicio')
+                        MDLabel:
+                            text: "Fecha de inicio"
+                            bold: True
+                            font_style: "Subtitle2"
+                            halign: "center"
+                            adaptive_height: True
+                        MDIcon:
+                            icon: "calendar-start"
+                            theme_text_color: "Custom"
+                            text_color: 1, 0.5, 0, 1
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                        MDLabel:
+                            text: root.fecha_inicio
+                            halign: "center"
+                            font_style: "Caption"
+                            theme_text_color: "Secondary"
+                            adaptive_height: True
+
+                    # 6. Fecha final
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(130)
+                        radius: [15]
+                        padding: [dp(10), dp(15)]
+                        spacing: dp(8)
+                        elevation: 1
+                        ripple_behavior: True
+                        on_release: root.abrir_calendario('final')
+                        MDLabel:
+                            text: "Fecha final"
+                            bold: True
+                            font_style: "Subtitle2"
+                            halign: "center"
+                            adaptive_height: True
+                        MDIcon:
+                            icon: "calendar-check"
+                            theme_text_color: "Custom"
+                            text_color: 1, 0.5, 0, 1
+                            font_size: "36sp"
+                            pos_hint: {"center_x": .5}
+                        MDLabel:
+                            text: root.fecha_final
+                            halign: "center"
+                            font_style: "Caption"
+                            theme_text_color: "Secondary"
+                            adaptive_height: True
+
+# --- COMPONENTE: Tarjeta de Integrante ---
+<TarjetaIntegrante@MDCard>:
+    orientation: 'vertical'
+    size_hint_y: None
+    height: dp(100)
+    radius: [15]
+    padding: dp(10)
+    elevation: 1
+    ripple_behavior: True
+    numero: ""
+    nombre_alias: "Nombre"
+    usuario: ""
+    posicion_numero: "left" # "left" o "right"
+
+    MDFloatLayout:
+        MDLabel:
+            text: root.numero
+            font_style: "H4"
+            bold: True
+            theme_text_color: "Custom"
+            text_color: 1, 0.5, 0, 1
+            size_hint: None, None
+            size: dp(40), dp(40)
+            pos_hint: {"center_y": .5, "x": 0.05} if root.posicion_numero == "left" else {"center_y": .5, "right": 0.95}
+        
+        MDLabel:
+            text: root.nombre_alias
+            halign: "center"
+            bold: True
+            font_style: "Subtitle1"
+            pos_hint: {"center_x": .5, "top": 1}
+            
+        MDLabel:
+            text: root.usuario
+            halign: "center"
+            theme_text_color: "Secondary"
+            font_style: "Caption"
+            pos_hint: {"center_x": .5, "center_y": .3}
+
+# --- PANTALLA: INTEGRANTES Y PAGOS ---
+<IntegrantesPagosScreen>:
+    name: 'integrantes_pagos'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: 0.98, 0.98, 0.98, 1
+        
+        # Header
+        MDBoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            spacing: dp(15)
+            MDIconButton:
+                icon: "chevron-left"
+                on_release: root.manager.current = 'detalles_junta'
+            MDLabel:
+                text: "Integrantes y Pagos"
+                bold: True
+                font_style: "H6"
+
+        MDScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                adaptive_height: True
+                padding: dp(15)
+                spacing: dp(15)
+
+                Widget:
+                    size_hint_y: None
+                    height: dp(30)
+
+                MDGridLayout:
+                    id: grid_integrantes
+                    cols: 2
+                    spacing: dp(15)
+                    adaptive_height: True
