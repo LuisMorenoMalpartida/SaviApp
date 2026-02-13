@@ -10,6 +10,98 @@
     IntegrantesPagosScreen:
     ReportarScreen:
 
+# --- COMPONENTE: Menú Compartir (SOLUCIÓN PANTALLA GRIS) ---
+<MenuCompartir>:
+    size_hint: None, None
+    width: dp(300)
+    height: dp(250)
+    radius: [20]
+    md_bg_color: 1, 1, 1, 1
+    auto_dismiss: True
+    background_color: 0, 0, 0, 0.5 # Fondo semitransparente oscuro
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(15)
+        
+        MDLabel:
+            text: "Compartir invitación"
+            font_style: "H6"
+            halign: "center"
+            bold: True
+            adaptive_height: True
+            theme_text_color: "Primary"
+            
+        MDLabel:
+            text: root.url_invitacion
+            font_style: "Caption"
+            halign: "center"
+            theme_text_color: "Secondary"
+            adaptive_height: True
+            
+        Widget:
+            size_hint_y: None
+            height: dp(10)
+            
+        MDFillRoundFlatButton:
+            text: "Copiar Enlace"
+            size_hint_x: 1
+            height: dp(45)
+            md_bg_color: 1, 0.5, 0, 1
+            on_release: root.compartir("Copiar Link")
+            
+        MDFillRoundFlatButton:
+            text: "WhatsApp"
+            size_hint_x: 1
+            height: dp(45)
+            md_bg_color: 0.1, 0.8, 0.1, 1
+            on_release: root.compartir("WhatsApp")
+
+# --- COMPONENTE: Campo de Formulario Personalizado ---
+<CampoFormulario@MDBoxLayout>:
+    icon: "pencil"
+    hint_text: ""
+    input_filter: None
+    text: ""
+    is_readonly: False
+    on_text_callback: None
+    
+    orientation: 'horizontal'
+    adaptive_height: True
+    spacing: dp(15)
+    pos_hint: {"center_y": .5}
+
+    MDIcon:
+        icon: root.icon
+        theme_text_color: "Custom"
+        text_color: 1, 0.5, 0, 1 
+        font_size: "28sp"
+        pos_hint: {"center_y": .5}
+        size_hint_x: None
+        width: dp(30)
+
+    MDCard:
+        size_hint_y: None
+        height: dp(48)
+        radius: [10]
+        elevation: 2
+        md_bg_color: 1, 1, 1, 1
+        line_color: 1, 0.5, 0, 0.6 
+        padding: [dp(10), 0, dp(10), 0]
+        
+        MDTextField:
+            id: text_field
+            hint_text: root.hint_text
+            text: root.text
+            mode: "rectangle"
+            line_color_normal: 0, 0, 0, 0 
+            line_color_focus: 0, 0, 0, 0
+            input_filter: root.input_filter
+            readonly: root.is_readonly
+            pos_hint: {"center_y": .5}
+            on_text: root.text = self.text
+
 # --- COMPONENTE: Tarjeta para la lista de Juntas Propias ---
 <TarjetaListaJunta>:
     orientation: 'vertical'
@@ -22,7 +114,6 @@
     ripple_behavior: True
     on_release: app.ver_detalles_junta(root.nombre, root.monto)
     
-    # Contenedor Principal
     MDBoxLayout:
         orientation: 'horizontal'
         padding: [dp(15), dp(10)]
@@ -30,7 +121,6 @@
         adaptive_height: True
         pos_hint: {"center_y": .5}
 
-        # Contenedor Izquierdo (Nombre y Estado)
         MDBoxLayout:
             orientation: 'vertical'
             adaptive_height: True
@@ -52,7 +142,6 @@
                 theme_text_color: "Secondary"
                 adaptive_height: True
         
-        # Contenedor Derecho (Monto)
         MDBoxLayout:
             orientation: 'vertical'
             adaptive_height: True
@@ -108,7 +197,7 @@
         md_bg_color: app.theme_cls.primary_color
         font_size: "12sp"
 
-# --- COMPONENTE: Tarjeta de Integrante (ACTUALIZADA) ---
+# --- COMPONENTE: Tarjeta de Integrante ---
 <TarjetaIntegrante>:
     orientation: 'vertical'
     size_hint_y: None
@@ -118,11 +207,9 @@
     elevation: 2
     md_bg_color: 1, 1, 1, 1
     ripple_behavior: True
-    # Al tocar, llamamos a editar info (que busca el metodo en la pantalla padre)
     on_release: root.editar_info()
 
     MDFloatLayout:
-        # Bola del número
         MDCard:
             size_hint: None, None
             size: dp(40), dp(40)
@@ -140,7 +227,6 @@
                 text_color: 1, 0.5, 0, 1
                 font_style: "H6"
 
-        # Nombre / Alias
         MDLabel:
             text: root.nombre_alias
             halign: "center"
@@ -149,7 +235,6 @@
             pos_hint: {"center_x": .5, "center_y": .65}
             theme_text_color: "Primary"
             
-        # Estado o DNI
         MDLabel:
             text: "DNI: " + root.dni if root.dni else root.usuario
             halign: "center"
@@ -157,7 +242,6 @@
             font_style: "Caption"
             pos_hint: {"center_x": .5, "center_y": .35}
 
-        # Icono visual de editar
         MDIcon:
             icon: "pencil-circle"
             font_size: "20sp"
@@ -182,14 +266,12 @@
             MDFloatLayout:
                 FitImage:
                     source: 'assets/3.png'
-                
                 MDBoxLayout:
                     orientation: 'vertical'
                     adaptive_height: True
                     padding: dp(20)
                     spacing: dp(20)
                     pos_hint: {'center_x': .5, 'center_y': .15}
-                    
                     MDFillRoundFlatButton:
                         text: "COMENZAR AHORA"
                         size_hint_x: .8
@@ -205,46 +287,38 @@
         padding: dp(35)
         spacing: dp(20)
         md_bg_color: 1, 1, 1, 1
-        
         Widget:
             size_hint_y: None
             height: dp(20)
-
         Image:
             source: "assets/logo.png"
             size_hint: None, None
             size: dp(160), dp(160)
             pos_hint: {"center_x": 0.5}
-            
         MDLabel:
             text: "¡Bienvenido de nuevo!"
             font_style: "H5"
             bold: True
             halign: "center"
             theme_text_color: "Primary"
-
         MDTextField:
             hint_text: "Usuario o Correo"
             mode: "round"
             icon_left: "account"
-            
         MDTextField:
             hint_text: "Contraseña"
             mode: "round"
             password: True
             icon_left: "lock"
-            
         MDFillRoundFlatButton:
             text: "INICIAR SESIÓN"
             size_hint_x: 1
             on_release: root.manager.current = 'home'
-            
         MDTextButton:
             text: "¿No tienes cuenta? [b]Regístrate aquí[/b]"
             markup: True
             pos_hint: {"center_x": 0.5}
             on_release: root.manager.current = 'register'
-        
         Widget:
 
 # --- PANTALLA: REGISTRO ---
@@ -255,7 +329,6 @@
         padding: dp(35)
         spacing: dp(12)
         md_bg_color: 1, 1, 1, 1
-        
         MDLabel:
             text: "Crear Cuenta Nueva"
             font_style: "H5"
@@ -263,7 +336,6 @@
             halign: "center"
             size_hint_y: None
             height: dp(80)
-            
         MDTextField:
             hint_text: "Nombre Completo"
             mode: "round"
@@ -281,12 +353,10 @@
             mode: "round"
             password: True
             icon_left: "key"
-            
         MDFillRoundFlatButton:
             text: "REGISTRARME AHORA"
             size_hint_x: 1
             on_release: root.manager.current = 'login'
-            
         MDTextButton:
             text: "Ya tengo cuenta, [b]Iniciar sesión[/b]"
             markup: True
@@ -307,7 +377,6 @@
             md_bg_color: 0.2, 0.2, 0.2, 1
             line_color: 0, 0, 0, 0
             elevation: 4
-            
             MDFloatLayout:
                 Image:
                     source: "assets/logo2.png"
@@ -346,7 +415,6 @@
                             radius: [20]
                             elevation: 2
                             padding: 0
-                            
                             MDFloatLayout:
                                 size_hint: 1, 1
                                 FitImage:
@@ -360,7 +428,6 @@
                             spacing: dp(15)
                             size_hint_y: None
                             height: dp(100)
-                            
                             MDCard:
                                 radius: [15]
                                 md_bg_color: 1, 0.5, 0, 1
@@ -390,7 +457,6 @@
                                         text_color: 1, 1, 1, 1
                                         font_style: "Subtitle1"
                                         bold: True
-
                             MDCard:
                                 radius: [15]
                                 md_bg_color: 1, 0.5, 0, 1 
@@ -432,14 +498,12 @@
                             size_hint_y: None
                             height: dp(50)
                             spacing: dp(15)
-                            
                             MDFillRoundFlatButton:
                                 text: "CREAR JUNTA"
                                 font_size: "14sp"
                                 size_hint_x: .5
                                 md_bg_color: 1, 0.5, 0, 1
                                 on_release: nav_bottom.switch_tab('tab_crear')
-
                             MDFillRoundFlatButton:
                                 text: "BUSCAR"
                                 font_size: "14sp"
@@ -458,14 +522,12 @@
                             line_color: 1, 0.5, 0, 0.3
                             elevation: 1
                             ripple_behavior: True
-                            
                             MDIcon:
                                 icon: "lightbulb-on-outline"
                                 theme_text_color: "Custom"
                                 text_color: 1, 0.5, 0, 1
                                 font_size: "36sp"
                                 pos_hint: {"center_y": .5}
-                            
                             MDBoxLayout:
                                 orientation: 'vertical'
                                 pos_hint: {"center_y": .5}
@@ -493,7 +555,6 @@
                             height: self.minimum_height
                             padding: dp(15)
                             spacing: dp(15)
-                            
                             MDLabel:
                                 id: mensaje_vacio
                                 text: "Aquí aparecerá todas tus juntas creadas.\nUsa la pestaña 'Crear' para empezar."
@@ -514,13 +575,11 @@
                         spacing: dp(15)
                         size_hint_y: None
                         height: self.minimum_height
-                        
                         MDLabel:
                             text: "¿Tienes un código?"
                             font_style: "H6"
                             bold: True
                             halign: "center"
-                        
                         MDCard:
                             orientation: 'vertical'
                             padding: dp(20)
@@ -529,21 +588,18 @@
                             elevation: 2
                             size_hint_y: None
                             height: dp(180)
-                            
                             MDTextField:
                                 id: input_codigo_unirse
                                 hint_text: "Ingresa el Código QR o Link"
                                 helper_text: "Ej: SAVI-8823"
                                 icon_right: "qrcode"
                                 mode: "rectangle"
-                                
                             MDFillRoundFlatButton:
                                 text: "UNIRSE AHORA"
                                 size_hint_x: 1
                                 height: dp(50)
                                 md_bg_color: 1, 0.5, 0, 1
                                 on_release: app.procesar_codigo_invitacion(input_codigo_unirse.text)
-
                         MDLabel:
                             text: "O busca Juntas Públicas:"
                             font_style: "Subtitle1"
@@ -573,6 +629,14 @@
                             elevation: 2
                             md_bg_color: 1, 1, 1, 1
                             
+                            MDLabel:
+                                text: "Nueva Junta"
+                                font_style: "H6"
+                                bold: True
+                                theme_text_color: "Primary"
+                                adaptive_height: True
+
+                            # Nombre
                             MDTextField:
                                 id: input_nombre
                                 hint_text: "Nombre de la junta"
@@ -582,6 +646,16 @@
                                 icon_right: "pencil"
                                 icon_right_color: app.theme_cls.primary_color
                             
+                            # DNI (Solo por si se requiere, opcional)
+                            MDTextField:
+                                id: input_dni_crear
+                                hint_text: "DNI Organizador"
+                                mode: "rectangle"
+                                input_filter: "int"
+                                icon_right: "card-account-details"
+                                icon_right_color: app.theme_cls.primary_color
+
+                            # Monto
                             MDTextField:
                                 id: input_monto
                                 hint_text: "Monto Objetivo"
@@ -592,6 +666,77 @@
                                 icon_right: "cash"
                                 icon_right_color: app.theme_cls.primary_color
 
+                            # Cantidad Integrantes
+                            MDTextField:
+                                id: input_cantidad
+                                hint_text: "Cantidad de Integrantes"
+                                helper_text: "Máximo 10 personas"
+                                mode: "rectangle"
+                                input_filter: "int"
+                                icon_right: "account-group"
+                                icon_right_color: app.theme_cls.primary_color
+
+                            # Fechas (Layout horizontal)
+                            MDBoxLayout:
+                                adaptive_height: True
+                                spacing: dp(10)
+                                
+                                MDCard:
+                                    size_hint_y: None
+                                    height: dp(50)
+                                    radius: [5]
+                                    elevation: 0
+                                    line_color: 0, 0, 0, 0.2
+                                    ripple_behavior: True
+                                    on_release: app.abrir_picker('inicio')
+                                    padding: dp(10)
+                                    MDBoxLayout:
+                                        MDLabel:
+                                            id: txt_fecha_inicio
+                                            text: "Fecha Inicio"
+                                            theme_text_color: "Secondary"
+                                        MDIcon:
+                                            icon: "calendar"
+                                            theme_text_color: "Secondary"
+
+                                MDCard:
+                                    size_hint_y: None
+                                    height: dp(50)
+                                    radius: [5]
+                                    elevation: 0
+                                    line_color: 0, 0, 0, 0.2
+                                    ripple_behavior: True
+                                    on_release: app.abrir_picker('final')
+                                    padding: dp(10)
+                                    MDBoxLayout:
+                                        MDLabel:
+                                            id: txt_fecha_final
+                                            text: "Fecha Fin"
+                                            theme_text_color: "Secondary"
+                                        MDIcon:
+                                            icon: "calendar"
+                                            theme_text_color: "Secondary"
+
+                            # Periodo (Dropdown)
+                            MDCard:
+                                size_hint_y: None
+                                height: dp(50)
+                                radius: [5]
+                                elevation: 0
+                                line_color: 0, 0, 0, 0.2
+                                ripple_behavior: True
+                                on_release: app.abrir_menu_periodo(lbl_periodo)
+                                padding: dp(10)
+                                MDBoxLayout:
+                                    MDLabel:
+                                        id: lbl_periodo
+                                        text: "Periodo de pago (Seleccionar)"
+                                        theme_text_color: "Secondary"
+                                    MDIcon:
+                                        icon: "chevron-down"
+                                        theme_text_color: "Secondary"
+
+                            # Selección de Moneda
                             MDBoxLayout:
                                 orientation: 'vertical'
                                 adaptive_height: True
@@ -606,7 +751,7 @@
                                 
                                 Widget:
                                     size_hint_y: None
-                                    height: dp(15)
+                                    height: dp(5)
 
                                 MDBoxLayout:
                                     adaptive_height: True
@@ -627,24 +772,16 @@
                                             spacing: dp(8)
                                             adaptive_width: True
                                             pos_hint: {"center_x": .5, "center_y": .5}
-                                            
                                             MDIcon:
                                                 icon: "currency-sign"
                                                 theme_text_color: "Custom"
                                                 text_color: (1, 1, 1, 1) if app.moneda_seleccionada == "Soles" else (0.4, 0.4, 0.4, 1)
-                                                font_size: "20sp"
-                                                size_hint: None, None
-                                                size: dp(24), dp(24)
-                                                pos_hint: {"center_y": .5}
-                                            
                                             MDLabel:
                                                 text: "Soles (S/)"
                                                 adaptive_size: True
                                                 bold: True
                                                 theme_text_color: "Custom"
                                                 text_color: (1, 1, 1, 1) if app.moneda_seleccionada == "Soles" else (0.4, 0.4, 0.4, 1)
-                                                font_style: "Button"
-                                                pos_hint: {"center_y": .5}
 
                                     MDCard:
                                         size_hint: .5, None
@@ -661,36 +798,29 @@
                                             spacing: dp(8)
                                             adaptive_width: True
                                             pos_hint: {"center_x": .5, "center_y": .5}
-                                            
                                             MDIcon:
                                                 icon: "currency-usd"
                                                 theme_text_color: "Custom"
                                                 text_color: (1, 1, 1, 1) if app.moneda_seleccionada == "Dólares" else (0.4, 0.4, 0.4, 1)
-                                                font_size: "20sp"
-                                                size_hint: None, None
-                                                size: dp(24), dp(24)
-                                                pos_hint: {"center_y": .5}
-                                            
                                             MDLabel:
                                                 text: "Dólares ($)"
                                                 adaptive_size: True
                                                 bold: True
                                                 theme_text_color: "Custom"
                                                 text_color: (1, 1, 1, 1) if app.moneda_seleccionada == "Dólares" else (0.4, 0.4, 0.4, 1)
-                                                font_style: "Button"
-                                                pos_hint: {"center_y": .5}
 
                             Widget:
                                 size_hint_y: None
                                 height: dp(10)
 
+                            # Botón de Acción Principal
                             MDFillRoundFlatButton:
                                 text: "CREAR Y PUBLICAR"
                                 font_size: "16sp"
                                 size_hint_x: 1
                                 height: dp(50)
-                                md_bg_color: 1, 0.5, 0, 1
-                                on_release: app.crear_junta(input_nombre.text, input_monto.text)
+                                md_bg_color: 1, 0.5, 0, 1 # Naranja SAVI
+                                on_release: app.crear_junta(input_nombre.text, input_monto.text, input_cantidad.text, lbl_periodo.text, txt_fecha_inicio.text, txt_fecha_final.text)
 
             MDBottomNavigationItem:
                 name: 'tab_perfil'

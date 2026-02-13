@@ -7,6 +7,7 @@ from kivy.uix.modalview import ModalView
 from kivy.metrics import dp
 from kivy.factory import Factory
 from kivy.properties import StringProperty, NumericProperty, ListProperty
+from kivy.clock import Clock
 
 # --- CONFIGURACIÓN DE VENTANA ---
 Config.set('graphics', 'width', '360')
@@ -20,6 +21,7 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.card import MDCard
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.toast import toast
+from kivymd.uix.menu import MDDropdownMenu
 
 # --- CLASES PERSONALIZADAS ---
 
@@ -45,7 +47,6 @@ class MenuCompartir(ModalView):
 class TarjetaIntegrante(MDCard):
     """
     Tarjeta visual que representa un CUPO en la junta.
-    Puede estar ocupado o vacio.
     """
     numero = StringProperty("")
     nombre_alias = StringProperty("Cupo Disponible")
@@ -62,7 +63,6 @@ class TarjetaIntegrante(MDCard):
         """Abre el diálogo para editar este cupo específico."""
         app = MDApp.get_running_app()
         pantalla = app.get_manager().get_screen('integrantes_pagos')
-        # Pasamos el índice de ESTA tarjeta para editar exactamente este cupo
         pantalla.mostrar_dialogo_edicion(self.indice)
 
 # --- PANTALLAS ---
@@ -79,15 +79,11 @@ class ReportarScreen(MDScreen):
             toast("Por favor completa todos los campos")
             return
         
-        # Aquí iría la lógica para enviar a base de datos
         toast(f"Reporte enviado para DNI: {dni}")
-        
-        # Limpiar campos
         self.ids.input_dni.text = ""
         self.ids.input_reclamo.text = ""
-        
-        # Volver atrás (opcional)
-        # self.manager.current = 'detalles_junta'
+        # Regresar a la pantalla anterior
+        self.manager.current = 'detalles_junta'
 
 class DetallesJuntaScreen(MDScreen):
     nombre_junta = StringProperty("Nombre de la Junta")
@@ -142,9 +138,17 @@ class InvitarScreen(MDScreen):
 class InfoJuntaScreen(MDScreen):
     monto = StringProperty("S/ 0.00")
     periodo = StringProperty("Mensual")
-    num_personas = StringProperty("1") # Este es el valor visual del campo de texto
+    num_personas = StringProperty("1") 
     fecha_inicio = StringProperty("01/03/2026")
     fecha_final = StringProperty("01/01/2027")
+
+    def on_pre_enter(self):
+        """Sincronizar el número visual con la lista real al entrar."""
+        app = MDApp.get_running_app()
+        if app:
+            pagos = app.get_manager().get_screen('integrantes_pagos')
+            if pagos and pagos.lista_cupos:
+                self.num_personas = str(len(pagos.lista_cupos))
 
     def abrir_dialogo_editar_integrantes(self):
         from kivymd.uix.dialog import MDDialog
@@ -155,13 +159,12 @@ class InfoJuntaScreen(MDScreen):
             self.dialog_integrantes.dismiss(force=True)
             self.dialog_integrantes = None
         
-        # Recuperamos la cantidad actual real desde la pantalla de pagos
         app = MDApp.get_running_app()
         pagos = app.get_manager().get_screen('integrantes_pagos')
-        cantidad_actual = len(pagos.lista_cupos)
+        cantidad_actual = len(pagos.lista_cupos) if pagos.lista_cupos else 1
 
         self.text_field_integrantes = MDTextField(
-            hint_text="Cantidad de cupos (máx. 20)",
+            hint_text="Cantidad de cupos (máx. 10)",
             text=str(cantidad_actual),
             input_filter="int",
             max_text_length=2
@@ -171,19 +174,18 @@ class InfoJuntaScreen(MDScreen):
             valor = self.text_field_integrantes.text.strip()
             if valor.isdigit():
                 n = int(valor)
-                if 1 <= n <= 20:
+                if 1 <= n <= 10:
                     self.num_personas = str(n)
                     self.dialog_integrantes.dismiss()
-                    # Aquí redimensionamos la lista de cupos (crea vacíos o elimina sobrantes)
                     pagos.redimensionar_cupos(n)
-                    toast(f"Junta configurada para {n} personas")
+                    toast(f"Junta actualizada a {n} integrantes")
                 else:
-                    toast("Mínimo 1, Máximo 20")
+                    toast("Mínimo 1, Máximo 10")
             else:
                 toast("Número inválido")
 
         self.dialog_integrantes = MDDialog(
-            title="Editar Capacidad",
+            title="Editar Integrantes",
             type="custom",
             content_cls=self.text_field_integrantes,
             buttons=[
@@ -209,33 +211,29 @@ class InfoJuntaScreen(MDScreen):
 
 class IntegrantesPagosScreen(MDScreen):
     nombre_junta = StringProperty("")
-    
-    # LISTA MAESTRA DE CUPOS
-    # Cada elemento es un diccionario:
-    # {'ocupado': False, 'nombre': '', 'dni': '', ...}
     lista_cupos = ListProperty([])
 
-    def on_pre_enter(self):
-        # Inicialización por defecto si está vacía (creamos 10 cupos por ejemplo, o 1)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Inicializamos los datos lo antes posible para evitar crashes
+        Clock.schedule_once(self.inicializar_datos_default)
+
+    def inicializar_datos_default(self, dt):
+        """Crea el cupo de administrador si la lista está vacía."""
         if not self.lista_cupos:
-            self.redimensionar_cupos(10) # Valor por defecto de una junta típica
-            
-            # El cupo 1 siempre es el admin
+            self.redimensionar_cupos(1)
             self.lista_cupos[0] = {
                 'ocupado': True,
                 'nombre': 'Tú (Organizador)',
                 'usuario': 'Administrador',
                 'dni': '', 'telefono': '', 'correo': ''
             }
-        
-        self.renderizar_lista()
 
     def redimensionar_cupos(self, nueva_cantidad):
         """Ajusta el tamaño de la lista conservando los datos existentes."""
         actual = len(self.lista_cupos)
         
         if nueva_cantidad > actual:
-            # Agregar cupos vacíos
             for _ in range(nueva_cantidad - actual):
                 self.lista_cupos.append({
                     'ocupado': False,
@@ -244,41 +242,33 @@ class IntegrantesPagosScreen(MDScreen):
                     'dni': '', 'telefono': '', 'correo': ''
                 })
         elif nueva_cantidad < actual:
-            # Reducir cupos (eliminando desde el final)
             self.lista_cupos = self.lista_cupos[:nueva_cantidad]
-            
         self.renderizar_lista()
 
     def ocupar_siguiente_cupo_vacio(self, datos_usuario):
-        """
-        Busca el primer cupo 'ocupado': False y lo llena.
-        Si no hay cupos, retorna False.
-        """
+        """Busca el primer cupo 'ocupado': False y lo llena."""
+        
+        # Auto-expandir si está lleno
+        todos_llenos = all(c['ocupado'] for c in self.lista_cupos)
+        if todos_llenos and len(self.lista_cupos) < 10:
+            self.redimensionar_cupos(len(self.lista_cupos) + 1)
+            toast("Capacidad aumentada automáticamente")
+
         for i, cupo in enumerate(self.lista_cupos):
             if not cupo['ocupado']:
-                # Encontramos un lugar vacío
                 nuevo_cupo = cupo.copy()
                 nuevo_cupo.update(datos_usuario)
                 nuevo_cupo['ocupado'] = True
                 nuevo_cupo['usuario'] = 'Miembro Verificado'
                 
-                # Actualizamos la lista (trigger de Kivy)
                 self.lista_cupos[i] = nuevo_cupo
                 self.renderizar_lista()
-                return True, i + 1 # Retorna éxito y número de integrante
+                return True, i + 1 
         
-        return False, 0 # No hay cupos
+        return False, 0
 
     def renderizar_lista(self):
-        """Dibuja las tarjetas basadas en lista_cupos."""
         grid = self.ids.get('grid_integrantes', None)
-        if not grid: 
-            # Intentar buscar de nuevo si Kivy no lo cargó
-            for child in self.children:
-                if hasattr(child, 'ids') and 'grid_integrantes' in child.ids:
-                    grid = child.ids['grid_integrantes']
-                    break
-        
         if not grid: return
 
         grid.clear_widgets()
@@ -288,34 +278,26 @@ class IntegrantesPagosScreen(MDScreen):
             card.numero = str(index + 1)
             card.posicion_numero = "left" if (index + 1) % 2 != 0 else "right"
             
-            # Llenamos visualmente la tarjeta
             card.nombre_alias = datos.get('nombre', 'Cupo Disponible')
             card.usuario = datos.get('usuario', 'Toque para editar')
             card.dni = datos.get('dni', '')
             card.telefono = datos.get('telefono', '')
             card.correo = datos.get('correo', '')
             
-            # Importante: Guardamos el índice para saber cuál editar
             card.indice = index
-            
             grid.add_widget(card)
 
     def mostrar_dialogo_edicion(self, indice, es_registro_qr=False):
-        """
-        Abre dialogo para editar un cupo específico.
-        Si es_registro_qr=True, no se edita un índice, sino que se busca cupo vacío.
-        """
         from kivymd.uix.dialog import MDDialog
         from kivymd.uix.button import MDFlatButton, MDFillRoundFlatButton
         from kivymd.uix.textfield import MDTextField
         from kivymd.uix.label import MDLabel
         
-        # Datos iniciales
         datos_actuales = {}
         if not es_registro_qr and indice >= 0:
-            datos_actuales = self.lista_cupos[indice]
+            if indice < len(self.lista_cupos):
+                datos_actuales = self.lista_cupos[indice]
         
-        # Campos del formulario
         campo_nombre = MDTextField(hint_text="Nombre Completo", text=datos_actuales.get('nombre', ''))
         campo_dni = MDTextField(hint_text="DNI", text=datos_actuales.get('dni', ''), input_filter="int", max_text_length=8)
         campo_telefono = MDTextField(hint_text="Celular", text=datos_actuales.get('telefono', ''), input_filter="int", max_text_length=9)
@@ -323,13 +305,10 @@ class IntegrantesPagosScreen(MDScreen):
 
         contenido = MDBoxLayout(orientation="vertical", spacing="12dp", adaptive_height=True, size_hint_y=None)
         
-        if es_registro_qr:
-            titulo = "¡Únete a la Junta!"
-            subtitulo = "Tus datos se asignarán al siguiente cupo libre."
-        else:
-            titulo = "Editar Integrante"
-            subtitulo = f"Modificando cupo #{indice + 1}"
+        titulo = "¡Únete a la Junta!" if es_registro_qr else "Editar Integrante"
+        subtitulo = "Datos del participante"
 
+        contenido.add_widget(MDLabel(text=titulo, font_style="H6", adaptive_height=True))
         contenido.add_widget(MDLabel(text=subtitulo, theme_text_color="Secondary", font_style="Caption"))
         contenido.add_widget(campo_nombre)
         contenido.add_widget(campo_dni)
@@ -350,24 +329,22 @@ class IntegrantesPagosScreen(MDScreen):
             }
 
             if es_registro_qr:
-                # Lógica automática: Buscar primer vacío
                 exito, num = self.ocupar_siguiente_cupo_vacio(nuevos_datos)
                 if exito:
-                    toast(f"¡Bienvenido! Se te asignó el cupo #{num}")
+                    toast(f"¡Bienvenido! Cupo #{num}")
                     MDApp.get_running_app().get_manager().current = 'integrantes_pagos'
                 else:
-                    toast("¡Lo sentimos! La junta está llena.")
+                    toast("¡La junta está llena! (Max 10)")
             else:
-                # Lógica manual: Editar índice específico
-                nuevos_datos['ocupado'] = True # Si lo edito, lo ocupo
-                self.lista_cupos[indice].update(nuevos_datos)
-                self.renderizar_lista()
-                toast("Datos guardados")
+                nuevos_datos['ocupado'] = True
+                if indice < len(self.lista_cupos):
+                    self.lista_cupos[indice].update(nuevos_datos)
+                    self.renderizar_lista()
+                    toast("Datos guardados")
 
             self.dialogo.dismiss()
 
         self.dialogo = MDDialog(
-            title=titulo,
             type="custom",
             content_cls=contenido,
             buttons=[
@@ -381,6 +358,7 @@ class SaviScreenManager(ScreenManager): pass
 
 class SaviApp(MDApp):
     moneda_seleccionada = StringProperty("Soles")
+    menu_periodo = None
     DEBUG = 1
     KV_FILES = [os.path.join(os.path.dirname(os.path.abspath(__file__)), 'design.kv')]
 
@@ -410,16 +388,70 @@ class SaviApp(MDApp):
                 return self.root.children[0] if self.root.children else self.root
         return self.root
 
-    def crear_junta(self, nombre, monto):
+    def abrir_menu_periodo(self, caller):
+        """Abre el menú desplegable para el periodo de pago."""
+        opciones = ["Mensual", "Quincenal", "Semanal"]
+        items = [
+            {
+                "text": opcion,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=opcion: self.set_periodo(x, caller),
+            } for opcion in opciones
+        ]
+        self.menu_periodo = MDDropdownMenu(
+            caller=caller,
+            items=items,
+            # width_mult eliminado para evitar warning
+        )
+        self.menu_periodo.open()
+
+    def set_periodo(self, texto, caller):
+        caller.text = texto
+        self.menu_periodo.dismiss()
+
+    def abrir_picker(self, caller_id):
+        from kivymd.uix.pickers import MDDatePicker
+        def on_save(instance, value, date_range):
+            fecha = value.strftime('%d/%m/%Y')
+            screen = self.get_manager().get_screen('home')
+            if caller_id == 'inicio':
+                screen.ids.txt_fecha_inicio.text = fecha
+            else:
+                screen.ids.txt_fecha_final.text = fecha
+        date_picker = MDDatePicker()
+        date_picker.bind(on_save=on_save)
+        date_picker.open()
+
+    def crear_junta(self, nombre, monto, cantidad, periodo, inicio, final):
         if not nombre or not monto:
-            toast("Complete los campos")
+            toast("Nombre y Monto obligatorios")
             return 
 
+        # Validaciones
+        cant_int = 1
+        if cantidad and cantidad.isdigit():
+            cant_int = int(cantidad)
+            if cant_int > 10: cant_int = 10
+            if cant_int < 1: cant_int = 1
+        
         manager = self.get_manager()
+        
+        # 1. Configurar Pantallas
+        info_screen = manager.get_screen('info_junta')
+        pagos_screen = manager.get_screen('integrantes_pagos')
+        
+        info_screen.periodo = periodo
+        info_screen.fecha_inicio = inicio if inicio != "Fecha Inicio" else "Pendiente"
+        info_screen.fecha_final = final if final != "Fecha Fin" else "Pendiente"
+        info_screen.num_personas = str(cant_int)
+        
+        # Inicializar cupos reales
+        pagos_screen.redimensionar_cupos(cant_int)
+
+        # 2. UI Updates en Home
         home_screen = manager.get_screen('home')
         contenedor = home_screen.ids.lista_juntas
         mensaje_guia = home_screen.ids.mensaje_vacio
-
         mensaje_guia.opacity = 0
         mensaje_guia.height = 0
 
@@ -432,8 +464,11 @@ class SaviApp(MDApp):
         )
         contenedor.add_widget(nueva_tarjeta)
 
+        # Limpiar formulario
         home_screen.ids.input_nombre.text = ""
         home_screen.ids.input_monto.text = ""
+        home_screen.ids.input_cantidad.text = ""
+        
         home_screen.ids.nav_bottom.switch_tab('tab_mis_juntas')
 
     def ver_detalles_junta(self, nombre, monto):
@@ -444,27 +479,26 @@ class SaviApp(MDApp):
         manager.current = 'detalles_junta'
 
     def procesar_codigo_invitacion(self, codigo):
-        """
-        Simula leer el QR. En lugar de agregar a ciegas,
-        abre el formulario para llenar datos y busca cupo.
-        """
         if not codigo:
             toast("Ingresa un código válido")
             return
         
         toast(f"Código {codigo} válido. Completar registro...")
         
-        # Accedemos a la lógica de pagos para usar su formulario
-        manager = self.get_manager()
-        pagos_screen = manager.get_screen('integrantes_pagos')
-        
-        # Usamos un pequeño delay para simular carga
-        from kivy.clock import Clock
-        def lanzar_formulario(dt):
-            # True indica que es flujo de QR (buscar cupo libre)
-            pagos_screen.mostrar_dialogo_edicion(-1, es_registro_qr=True)
-        
-        Clock.schedule_once(lanzar_formulario, 0.5)
+        try:
+            manager = self.get_manager()
+            pagos_screen = manager.get_screen('integrantes_pagos')
+            
+            if not pagos_screen.lista_cupos:
+                pagos_screen.inicializar_datos_default(0)
+            
+            def lanzar_formulario(dt):
+                pagos_screen.mostrar_dialogo_edicion(-1, es_registro_qr=True)
+            
+            Clock.schedule_once(lanzar_formulario, 0.2)
+        except Exception as e:
+            print(f"Error: {e}")
+            toast("Error al procesar.")
 
 if __name__ == '__main__':
     SaviApp().run()
