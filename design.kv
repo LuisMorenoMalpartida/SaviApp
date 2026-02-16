@@ -9,8 +9,8 @@
     InfoJuntaScreen:
     IntegrantesPagosScreen:
     ReportarScreen:
-
-# --- COMPONENTE: Menú Compartir (SOLUCIÓN PANTALLA GRIS) ---
+    SorteoScreen:
+#COMPONENTE: Menú Compartir 
 <MenuCompartir>:
     size_hint: None, None
     width: dp(300)
@@ -18,8 +18,8 @@
     radius: [20]
     md_bg_color: 1, 1, 1, 1
     auto_dismiss: True
-    background_color: 0, 0, 0, 0.5 # Fondo semitransparente oscuro
-    
+    background_color: 0, 0, 0, 0.5
+
     MDBoxLayout:
         orientation: 'vertical'
         padding: dp(20)
@@ -296,7 +296,7 @@
             size: dp(160), dp(160)
             pos_hint: {"center_x": 0.5}
         MDLabel:
-            text: "¡Bienvenido de nuevo!"
+            text: "¡Bienvenido Estimado cliente!"
             font_style: "H5"
             bold: True
             halign: "center"
@@ -329,6 +329,11 @@
         padding: dp(35)
         spacing: dp(12)
         md_bg_color: 1, 1, 1, 1
+        Image:
+            source: "assets/logo.png"
+            size_hint: None, None
+            size: dp(160), dp(160)
+            pos_hint: {"center_x": 0.5}
         MDLabel:
             text: "Crear Cuenta Nueva"
             font_style: "H5"
@@ -575,37 +580,52 @@
                         spacing: dp(15)
                         size_hint_y: None
                         height: self.minimum_height
-                        MDLabel:
-                            text: "¿Tienes un código?"
-                            font_style: "H6"
-                            bold: True
-                            halign: "center"
                         MDCard:
                             orientation: 'vertical'
                             padding: dp(20)
-                            spacing: dp(15)
+                            spacing: dp(12)
                             radius: [20]
                             elevation: 2
                             size_hint_y: None
                             height: dp(180)
+                            MDLabel:
+                                text: "Ingresa el Código QR o Link"
+                                font_style: "Subtitle1"
+                                bold: True
+                                halign: "left"
+                                theme_text_color: "Primary"
+                                size_hint_y: None
+                                height: self.texture_size[1]
                             MDTextField:
                                 id: input_codigo_unirse
-                                hint_text: "Ingresa el Código QR o Link"
-                                helper_text: "Ej: SAVI-8823"
+                                hint_text: "Ej: SAVI-8823"
+                                hint_text_color: app.theme_cls.primary_color
                                 icon_right: "qrcode"
                                 mode: "rectangle"
-                            MDFillRoundFlatButton:
-                                text: "UNIRSE AHORA"
-                                size_hint_x: 1
-                                height: dp(50)
-                                md_bg_color: 1, 0.5, 0, 1
-                                on_release: app.procesar_codigo_invitacion(input_codigo_unirse.text)
-                        MDLabel:
-                            text: "O busca Juntas Públicas:"
-                            font_style: "Subtitle1"
-                            bold: True
-                            adaptive_height: True
-                            padding: [0, dp(20), 0, 0]
+                            MDBoxLayout:
+                                size_hint_y: None
+                                height: dp(44)
+                                spacing: dp(10)
+                                MDBoxLayout:
+                                    size_hint_x: None
+                                    width: dp(96)
+                                    MDIconButton:
+                                        icon: "qrcode-scan"
+                                        user_font_size: "20sp"
+                                        theme_icon_color: "Custom"
+                                        icon_color: app.theme_cls.primary_color
+                                        on_release: app.lanzar_scanner()
+                                    MDIconButton:
+                                        icon: "upload"
+                                        user_font_size: "20sp"
+                                        theme_icon_color: "Custom"
+                                        icon_color: app.theme_cls.primary_color
+                                        on_release: app.abrir_file_manager()
+                                MDFillRoundFlatButton:
+                                    text: "UNIRSE AHORA"
+                                    size_hint_x: 1
+                                    md_bg_color: 1, 0.5, 0, 1
+                                    on_release: app.procesar_codigo_invitacion(input_codigo_unirse.text)
 
             MDBottomNavigationItem:
                 name: 'tab_crear'
@@ -640,11 +660,16 @@
                             MDTextField:
                                 id: input_nombre
                                 hint_text: "Nombre de la junta"
-                                helper_text: "Ej: Viaje 2026, Auto Nuevo"
+                                helper_text: "Ej: Viaje 2026, Auto Nuevo, ¡Fiesta #1!"
                                 helper_text_mode: "on_focus"
                                 mode: "rectangle"
                                 icon_right: "pencil"
                                 icon_right_color: app.theme_cls.primary_color
+                                # Permitir caracteres especiales y números: usar input_type text
+                                input_type: 'text'
+                                # Sin filtro (None) para aceptar cualquier carácter
+                                input_filter: None
+                                max_text_length: 100
                             
                             # DNI (Solo por si se requiere, opcional)
                             MDTextField:
@@ -907,12 +932,14 @@
                             text: "Monto de la junta"
                             halign: "center"
                             theme_text_color: "Secondary"
-                        MDLabel:
+                        FitLabel:
                             text: root.monto_junta
                             halign: "center"
-                            font_style: "H3"
                             bold: True
                             theme_text_color: "Primary"
+                            max_font_size: 64
+                            min_font_size: 24
+                            step: 1
 
                 MDGridLayout:
                     cols: 2
@@ -928,6 +955,8 @@
                         radius: [20]
                         line_color: 0, 0, 0, 0.08
                         ripple_behavior: True
+
+                        
                         on_release: root.ir_a_info()
                         MDIcon:
                             icon: "card-bulleted-outline"
@@ -980,11 +1009,11 @@
                         ripple_behavior: True
                         on_release: root.ir_a_pagos()
                         MDIcon:
-                            icon: "currency-usd-circle-outline"
+                            icon: "account-group"
                             font_size: "36sp"
                             pos_hint: {"center_x": .5}
                             theme_text_color: "Custom"
-                            text_color: 1, 0.6, 0.1, 1
+                            text_color: 0.1, 0.45, 0.85, 1
                         MDLabel:
                             text: "Integrantes y Pagos"
                             halign: "center"
@@ -1068,6 +1097,16 @@
                         source: "" 
                         allow_stretch: True
                         keep_ratio: True
+
+                Widget:
+                    size_hint_y: None
+                    height: dp(6)
+
+                MDFillRoundFlatButton:
+                    text: "SUBIR QR"
+                    size_hint_x: .8
+                    pos_hint: {'center_x': .5}
+                    on_release: app.abrir_file_manager()
                         
                 MDLabel:
                     text: "O comparte este código:"
@@ -1214,34 +1253,43 @@
                             theme_text_color: "Secondary"
                             adaptive_height: True
 
-                    # 3. Sorteo
+                    # 3. Sorteo (reordered for cleaner layout)
                     MDCard:
                         orientation: 'vertical'
                         size_hint_y: None
-                        height: dp(130)
+                        height: dp(140)
                         radius: [15]
-                        padding: [dp(10), dp(15)]
-                        spacing: dp(8)
+                        padding: dp(12)
+                        spacing: dp(6)
                         elevation: 1
                         ripple_behavior: True
-                        MDLabel:
-                            text: "Sorteo"
-                            bold: True
-                            font_style: "Subtitle2"
-                            halign: "center"
-                            adaptive_height: True
-                        MDIcon:
-                            icon: "account-group"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.5, 0, 1
-                            font_size: "36sp"
-                            pos_hint: {"center_x": .5}
-                        MDLabel:
-                            text: "Registra nombre"
-                            halign: "center"
-                            font_style: "Caption"
-                            theme_text_color: "Secondary"
-                            adaptive_height: True
+                        on_release: app.get_manager().current = 'sorteo'
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            padding: dp(6)
+                            spacing: dp(6)
+                            size_hint_y: None
+                            height: self.minimum_height
+                            MDIcon:
+                                icon: "account-group"
+                                theme_text_color: "Custom"
+                                text_color: 1, 0.5, 0, 1
+                                font_size: "36sp"
+                                pos_hint: {"center_x": .5}
+                                size_hint_y: None
+                                height: dp(44)
+                            MDLabel:
+                                text: "Sorteo"
+                                bold: True
+                                font_style: "Subtitle1"
+                                halign: "center"
+                                adaptive_height: True
+                            MDLabel:
+                                text: "Asignación y solicitudes"
+                                halign: "center"
+                                font_style: "Caption"
+                                theme_text_color: "Secondary"
+                                adaptive_height: True
 
                     # 4. DNI
                     MDCard:
@@ -1282,6 +1330,7 @@
                         spacing: dp(8)
                         elevation: 1
                         ripple_behavior: True
+                        # CAMBIO AQUÍ: Usar root directamente
                         on_release: root.abrir_calendario('inicio')
                         MDLabel:
                             text: "Fecha inicio"
@@ -1312,6 +1361,7 @@
                         spacing: dp(8)
                         elevation: 1
                         ripple_behavior: True
+                        # CAMBIO AQUÍ: Usar root directamente
                         on_release: root.abrir_calendario('final')
                         MDLabel:
                             text: "Fecha final"
@@ -1369,6 +1419,97 @@
                     cols: 2
                     spacing: dp(15)
                     adaptive_height: True
+
+# --- PANTALLA: SORTEO (pantalla dedicada) ---
+<SorteoScreen>:
+    name: 'sorteo'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDBoxLayout:
+            size_hint_y: None
+            height: dp(56)
+            padding: dp(8)
+            MDIconButton:
+                icon: 'chevron-left'
+                on_release: app.get_manager().current = 'detalles_junta'
+            MDLabel:
+                text: 'Sorteo'
+                font_style: 'H6'
+                halign: 'center'
+        MDScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                padding: dp(16)
+                spacing: dp(12)
+
+                MDCard:
+                    padding: dp(12)
+                    radius: [12]
+                    md_bg_color: 1,1,1,1
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        padding: dp(6)
+                        spacing: dp(10)
+
+                        AnchorLayout:
+                            size_hint_y: None
+                            height: dp(64)
+                            MDCard:
+                                size_hint: None, None
+                                size: dp(64), dp(64)
+                                radius: [32]
+                                md_bg_color: 1, 0.95, 0.85, 1
+                                elevation: 0
+                                pos_hint: {'center_x': .5, 'center_y': .5}
+
+                        MDSeparator:
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            size_hint_y: None
+                            height: self.minimum_height
+                            spacing: dp(8)
+
+                            MDBoxLayout:
+                                size_hint_y: None
+                                height: dp(48)
+                                spacing: dp(8)
+
+                                MDFillRoundFlatButton:
+                                    text: 'Generar Números'
+                                    md_bg_color: app.theme_cls.primary_color
+                                    on_release: app.get_manager().get_screen('integrantes_pagos').generar_sorteo()
+
+                                MDRectangleFlatButton:
+                                    text: 'Ver Solicitudes'
+                                    on_release: app.mostrar_solicitudes_sorteo()
+                                    size_hint_x: None
+                                    width: dp(140)
+
+                            MDFillRoundFlatButton:
+                                text: 'Solicitar Intercambio'
+                                size_hint_x: .6
+                                pos_hint: {'center_x': .5}
+                                md_bg_color: 1, 1, 1, 1
+                                line_color: app.theme_cls.primary_color
+                                text_color: app.theme_cls.primary_color
+                                on_release: app.mostrar_formulario_solicitud()
+
+                        MDLabel:
+                            text: 'Asignaciones actuales'
+                            font_style: 'Subtitle2'
+                            halign: 'left'
+                            size_hint_y: None
+                            height: self.texture_size[1]
+
+                        ScrollView:
+                            do_scroll_x: False
+                            MDBoxLayout:
+                                id: sorteo_area
+                                orientation: 'vertical'
+                                adaptive_height: True
 
 # --- PANTALLA: REPORTAR ---
 <ReportarScreen>:
